@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, TouchableOpacity, View } from "react-native";
+import { Overlay } from "react-native-elements";
 import { Stack, useRouter, useSearchParams } from "expo-router";
 import { Text, SafeAreaView } from "react-native";
 import axios from "axios";
@@ -24,6 +19,12 @@ const JobSearch = () => {
     const [searchLoader, setSearchLoader] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [page, setPage] = useState(1);
+    const [filterVisible, setFilterVisible] = useState(false);
+
+    const toggleFilterVisible = () => {
+        setFilterVisible(!filterVisible);
+        console.log(filterVisible);
+    };
 
     const handleSearch = async () => {
         setSearchLoader(true);
@@ -78,17 +79,27 @@ const JobSearch = () => {
                             handlePress={() => router.back()}
                         />
                     ),
+                    headerRight: () => (
+                        <ScreenHeaderBtn
+                            iconUrl={icons.filter}
+                            dimension="60%"
+                            handlePress={toggleFilterVisible}
+                        />
+                    ),
                     headerTitle: "",
                 }}
             />
+            <Overlay
+                isVisible={filterVisible}
+                onBackdropPress={toggleFilterVisible}
+                overlayStyle={styles.filterOverlay}
+            ></Overlay>
             <FlatList
                 data={searchResult}
                 renderItem={({ item }) => (
                     <NearbyJobCard
                         job={item}
-                        handleNavigate={() =>
-                            router.push(`/job-details/${item.job_id}`)
-                        }
+                        handleNavigate={() => router.push(`/job-details/${item.job_id}`)}
                     />
                 )}
                 keyExtractor={(item) => item.job_id}
@@ -100,20 +111,13 @@ const JobSearch = () => {
                     <>
                         <View style={styles.container}>
                             <Text style={styles.searchTitle}>{params.id}</Text>
-                            <Text style={styles.noOfSearchedJobs}>
-                                Job Opportunities
-                            </Text>
+                            <Text style={styles.noOfSearchedJobs}>Job Opportunities</Text>
                         </View>
                         <View style={styles.loaderContainer}>
                             {searchLoader ? (
-                                <ActivityIndicator
-                                    size="large"
-                                    color={COLORS.primary}
-                                />
+                                <ActivityIndicator size="large" color={COLORS.primary} />
                             ) : (
-                                searchError && (
-                                    <Text>Oops something went wrong</Text>
-                                )
+                                searchError && <Text>Oops something went wrong</Text>
                             )}
                         </View>
                     </>
@@ -149,4 +153,5 @@ const JobSearch = () => {
         </SafeAreaView>
     );
 };
+
 export default JobSearch;
